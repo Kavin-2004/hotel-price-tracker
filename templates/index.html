@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Price Tracker — Coimbatore</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0f1a;
+      --surface: #131929;
+      --surface2: #1b2440;
+      --border: #232e4a;
+      --accent: #4f8ef7;
+      --accent2: #38d9a9;
+      --text: #e8edf5;
+      --muted: #7889aa;
+      --booking: #4f8ef7;
+      --oyo: #ff5a5f;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand h1 span { color: var(--accent); }
+
+    .brand p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .last-updated {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* MAIN */
+    main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+
+    /* STATS BAR */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+    }
+
+    .stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card .value { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+    .stat-card .value.green { color: var(--accent2); }
+    .stat-card .value.blue { color: var(--accent); }
+
+    /* CONTROLS */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-scrape {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-scrape:hover { background: #3a7ae4; }
+    .btn-scrape:active { transform: scale(0.97); }
+    .btn-scrape:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(79,142,247,0.08);
+    }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus { border-color: var(--accent); }
+    .search-box::placeholder { color: var(--muted); }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      padding: 0.85rem 1.2rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover { color: var(--text); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    tbody td { padding: 0.9rem 1.2rem; font-size: 0.88rem; }
+
+    .rank { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+
+    .hotel-name { font-weight: 500; }
+
+    .price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent2);
+    }
+
+    .source-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .source-booking { background: rgba(79,142,247,0.15); color: var(--booking); }
+    .source-oyo { background: rgba(255,90,95,0.15); color: var(--oyo); }
+
+    /* STATES */
+    .state-box {
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+
+    .state-box .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .state-box .title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .state-box .desc { color: var(--muted); font-size: 0.85rem; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* PROGRESS BAR */
+    .progress-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar-wrap.active { display: block; }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      header { padding: 1.2rem 1rem; }
+      .search-box { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>🏨 Hotel Prices <span>Coimbatore</span></h1>
+    <p>Live data from Booking.com &amp; OYO</p>
+  </div>
+  <div class="last-updated" id="lastUpdated">—</div>
+</header>
+
+<main>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Total Hotels</div>
+      <div class="value blue" id="statTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cheapest Price</div>
+      <div class="value green" id="statMin">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Average Price</div>
+      <div class="value" id="statAvg">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Booking.com</div>
+      <div class="value blue" id="statBooking">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">OYO</div>
+      <div class="value" style="color:var(--oyo)" id="statOyo">—</div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn-scrape" id="scrapeBtn" onclick="startScrape()">
+      <span id="btnIcon">🔍</span> Fetch Live Prices
+    </button>
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('booking.com', this)">Booking.com</button>
+      <button class="filter-btn" onclick="setFilter('oyo', this)">OYO</button>
+    </div>
+    <input type="text" class="search-box" placeholder="🔎 Search hotel..." oninput="renderTable()" id="searchBox" />
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap" id="tableWrap">
+    <div class="state-box">
+      <div class="icon">🏨</div>
+      <div class="title">Ready to fetch prices</div>
+      <div class="desc">Click "Fetch Live Prices" to scrape Booking.com &amp; OYO</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let allData = [];
+  let activeFilter = 'all';
+  let sortCol = 'price';
+  let sortDir = 1;
+
+  async function startScrape() {
+    const btn = document.getElementById('scrapeBtn');
+    btn.disabled = true;
+    document.getElementById('btnIcon').textContent = '⏳';
+    btn.childNodes[1].textContent = ' Scraping...';
+
+    // Animated progress bar
+    const wrap = document.getElementById('progressWrap');
+    const bar = document.getElementById('progressBar');
+    wrap.classList.add('active');
+    let p = 0;
+    const interval = setInterval(() => {
+      p = Math.min(p + Math.random() * 4, 88);
+      bar.style.width = p + '%';
+    }, 500);
+
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="title">Scraping live data...</div>
+        <div class="desc">Visiting Booking.com &amp; OYO — this may take 30–60 seconds</div>
+      </div>`;
+
+    try {
+      const res = await fetch('/api/scrape');
+      const json = await res.json();
+      clearInterval(interval);
+      bar.style.width = '100%';
+
+      if (json.success) {
+        allData = json.data;
+        document.getElementById('lastUpdated').textContent = 'Updated: ' + json.last_updated;
+        updateStats();
+        renderTable();
+      } else {
+        showError(json.error || 'Unknown error');
+      }
+    } catch (e) {
+      clearInterval(interval);
+      showError(e.message);
+    } finally {
+      setTimeout(() => { wrap.classList.remove('active'); bar.style.width = '0%'; }, 600);
+      btn.disabled = false;
+      document.getElementById('btnIcon').textContent = '🔍';
+      btn.childNodes[1].textContent = ' Fetch Live Prices';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="state-box">
+        <div class="icon">⚠️</div>
+        <div class="title">Scrape failed</div>
+        <div class="desc">${msg}</div>
+      </div>`;
+  }
+
+  function setFilter(f, el) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderTable();
+  }
+
+  function updateStats() {
+    const prices = allData.map(d => d.price);
+    const booking = allData.filter(d => d.source === 'booking.com');
+    const oyo = allData.filter(d => d.source === 'oyo');
+    document.getElementById('statTotal').textContent = allData.length;
+    document.getElementById('statMin').textContent = prices.length ? '₹' + Math.min(...prices).toLocaleString() : '—';
+    document.getElementById('statAvg').textContent = prices.length ? '₹' + Math.round(prices.reduce((a,b)=>a+b,0)/prices.length).toLocaleString() : '—';
+    document.getElementById('statBooking').textContent = booking.length + ' hotels';
+    document.getElementById('statOyo').textContent = oyo.length + ' hotels';
+  }
+
+  function renderTable() {
+    const query = document.getElementById('searchBox').value.toLowerCase();
+    let filtered = allData.filter(d => {
+      const matchSource = activeFilter === 'all' || d.source === activeFilter;
+      const matchSearch = d.hotel_name.toLowerCase().includes(query);
+      return matchSource && matchSearch;
+    });
+
+    filtered.sort((a, b) => {
+      const aVal = sortCol === 'price' ? a.price : a[sortCol];
+      const bVal = sortCol === 'price' ? b.price : b[sortCol];
+      return aVal > bVal ? sortDir : aVal < bVal ? -sortDir : 0;
+    });
+
+    if (!filtered.length) {
+      document.getElementById('tableWrap').innerHTML = `
+        <div class="state-box">
+          <div class="icon">🔍</div>
+          <div class="title">No results found</div>
+          <div class="desc">Try a different filter or search term</div>
+        </div>`;
+      return;
+    }
+
+    const rows = filtered.map((d, i) => {
+      const srcClass = d.source === 'booking.com' ? 'source-booking' : 'source-oyo';
+      const srcLabel = d.source === 'booking.com' ? 'Booking.com' : 'OYO';
+      return `
+        <tr>
+          <td class="rank">#${i + 1}</td>
+          <td class="hotel-name">${d.hotel_name}</td>
+          <td class="price">₹${d.price.toLocaleString()}</td>
+          <td><span class="source-badge ${srcClass}">${srcLabel}</span></td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('tableWrap').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('rank')">#</th>
+            <th onclick="sortBy('hotel_name')">Hotel Name ↕</th>
+            <th onclick="sortBy('price')">Price / Night ↕</th>
+            <th onclick="sortBy('source')">Source ↕</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function sortBy(col) {
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    renderTable();
+  }
+</script>
+</body>
+</html>
