@@ -2,7 +2,7 @@ import asyncio
 import logging
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from flask import Flask, jsonify, render_template
 
@@ -22,6 +22,7 @@ try:
 except Exception as e:
     logging.error(f"Chromium install failed: {e}")
 
+IST = timezone(timedelta(hours=5, minutes=30))
 _cache = {"data": [], "last_updated": None}
 
 def build_scrapers():
@@ -54,7 +55,7 @@ def scrape():
         ]
         data.sort(key=lambda x: x["price"])
         _cache["data"] = data
-        _cache["last_updated"] = datetime.now().strftime("%d %b %Y, %I:%M %p")
+        _cache["last_updated"] = datetime.now(IST).strftime("%d %b %Y, %I:%M %p")
         return jsonify({"success": True, "data": data, "last_updated": _cache["last_updated"]})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
