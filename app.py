@@ -8,7 +8,7 @@ from flask import Flask, jsonify, render_template
 
 from scrapers.booking import BookingScraper
 from scrapers.oyo import OyoScraper
-
+from scrapers.goibibo import GobiboScraper
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -29,6 +29,7 @@ def build_scrapers():
     return [
         BookingScraper(city="Coimbatore", headless=True, max_scrolls=8),
         OyoScraper(city_slug="coimbatore", headless=True, max_scrolls=4),
+        GobiboScraper(city="coimbatore", headless=True, max_scrolls=4),
     ]
 
 async def run_scrape():
