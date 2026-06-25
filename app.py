@@ -1,270 +1,171 @@
-"""
-============================================================
-Hotel Dynamic Pricing — Scraper + Scheduler (SINGLE FILE)
-============================================================
-Stage 1: competitor hotel prices scrape + 5-min scheduler.
-DB illa, pricing logic illa (intha stage la venam).
-
-------------------------------------------------------------
-SETUP (VS Code terminal la oru thadava run pannu):
-------------------------------------------------------------
-    pip install playwright apscheduler
-    playwright install chromium
-
-------------------------------------------------------------
-RUN:
-------------------------------------------------------------
-    python app.py          ->  initial scrape + scheduler (every 5 min)
-    python app.py once     ->  one scrape mattum, apparam exit (test)
-
-Run pannumbodhu app.py irukkura folder la "mock_hotels.html"
-auto create aagum (test page). Real site venam.
-============================================================
-"""
-
 import asyncio
 import logging
 import os
-import re
+import subprocess
 import sys
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import datetime, timezone, timedelta
 
-from playwright.async_api import async_playwright, Page
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
+from flask import Flask, jsonify, render_template, request
+from flask_sqlalchemy import SQLAlchemy
 
+from scrapers.booking import BookingScraper
+from scrapers.oyo import OyoScraper
 
-# ============================================================
-# CONFIG
-# ============================================================
-SCRAPE_INTERVAL_MINUTES = 5      # eththana nimisham ku oru thadava scrape
-HEADLESS = True                  # False vechaa browser window visible (debug)
-PAGE_TIMEOUT_MS = 30000          # page load wait limit
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hotels.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
+logging.basicConfig(level=logging.INFO)
 
-# ============================================================
-# LOGGER
-# ============================================================
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-7s | %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger("hotel_scraper")
+# Install chromium at startup (Railway needs this)
+try:
+    logging.info("Installing chromium...")
+    subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium", "--with-deps"],
+        check=True, timeout=300
+    )
+    logging.info("Chromium installed!")
+except Exception as e:
+    logging.error(f"Chromium install failed: {e}")
 
+IST = timezone(timedelta(hours=5, minutes=30))
 
-# ============================================================
-# MOCK TEST PAGE  (real site venam — out-of-box velai pannum)
-# ============================================================
-MOCK_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Mock Competitor Hotels</title></head>
-<body>
-  <h1>Hotels in Coimbatore</h1>
-  <div id="hotel-list">
-    <div class="hotel-card"><span class="hotel-name">The Residency Towers</span><span class="hotel-price">Rs.6,500</span></div>
-    <div class="hotel-card"><span class="hotel-name">Vivanta Coimbatore</span><span class="hotel-price">Rs.8,200</span></div>
-    <div class="hotel-card"><span class="hotel-name">Le Meridien</span><span class="hotel-price">Rs.7,900</span></div>
-    <div class="hotel-card"><span class="hotel-name">Hotel City Tower</span><span class="hotel-price">Rs.4,300</span></div>
-    <div class="hotel-card"><span class="hotel-name">Annapoorna Lifestyle</span><span class="hotel-price">Rs.5,150</span></div>
-    <div class="hotel-card"><span class="hotel-name">Grand Regent</span><span class="hotel-price">Rs.3,800</span></div>
-    <div class="hotel-card"><span class="hotel-name">KK Residency</span><span class="hotel-price">Rs.2,950</span></div>
-    <div class="hotel-card"><span class="hotel-name">Park Plaza Coimbatore</span><span class="hotel-price">Rs.6,100</span></div>
-  </div>
-</body>
-</html>"""
+# ── Database Model ──
+class Hotel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    hotel_name = db.Column(db.String(300), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    source = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'hotel_name': self.hotel_name,
+            'price': self.price,
+            'source': self.source,
+            'updated_at': self.updated_at.strftime('%d %b %Y, %I:%M %p') if self.updated_at else ''
+        }
 
-def write_mock_page() -> str:
-    """Mock HTML ah script folder la write panni file:// URL return pannum."""
-    folder = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(folder, "mock_hotels.html")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(MOCK_HTML)
-    return "file://" + path
+with app.app_context():
+    db.create_all()
 
+# ── Cache ──
+_cache = {"data": [], "last_updated": None}
 
-def get_targets() -> List[dict]:
-    """Scrape panna vendiya sites. Real competitor add panna inga podu."""
+def build_scrapers():
     return [
-        {"name": "mock-competitors", "url": write_mock_page()},
-        # Real site example (HotelScraper la selectors maathunaa podhum):
-        # {"name": "competitor-booking", "url": "https://example.com/coimbatore"},
+        BookingScraper(city="Coimbatore", headless=True, max_scrolls=8),
+        OyoScraper(city_slug="coimbatore", headless=True, max_scrolls=4),
     ]
 
-
-# ============================================================
-# DATA MODEL
-# ============================================================
-@dataclass
-class ScrapedPrice:
-    """Oru hotel-oda scraped data. DB venam — plain dataclass."""
-    hotel_name: str
-    price: float
-    source: str
-    scraped_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-
-
-# ============================================================
-# SCRAPERS
-# ============================================================
-class BaseScraper(ABC):
-    """Common Playwright lifecycle. Per-site scraper extract() implement pannum."""
-
-    def __init__(self, name: str, url: str, headless: bool = True):
-        self.name = name
-        self.url = url
-        self.headless = headless
-
-    @abstractmethod
-    async def extract(self, page: Page) -> List[ScrapedPrice]:
-        raise NotImplementedError
-
-    async def scrape(self) -> List[ScrapedPrice]:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=self.headless)
-            try:
-                page = await browser.new_page()
-                await page.goto(
-                    self.url,
-                    wait_until="domcontentloaded",
-                    timeout=PAGE_TIMEOUT_MS,
-                )
-                return await self.extract(page)
-            finally:
-                await browser.close()
-
-
-class HotelScraper(BaseScraper):
-    """Card-based hotel scraper. Real site-ku indha 3 selectors maathunaa podhum."""
-
-    CARD_SELECTOR = ".hotel-card"
-    NAME_SELECTOR = ".hotel-name"
-    PRICE_SELECTOR = ".hotel-price"
-
-    async def extract(self, page: Page) -> List[ScrapedPrice]:
-        results: List[ScrapedPrice] = []
-
-        await page.wait_for_selector(self.CARD_SELECTOR, timeout=10000)
-        cards = await page.query_selector_all(self.CARD_SELECTOR)
-
-        for card in cards:
-            name_el = await card.query_selector(self.NAME_SELECTOR)
-            price_el = await card.query_selector(self.PRICE_SELECTOR)
-
-            if name_el is None or price_el is None:
-                continue
-
-            name = (await name_el.inner_text()).strip()
-            raw_price = (await price_el.inner_text()).strip()
-            price = self._clean_price(raw_price)
-
-            if price is None:
-                logger.warning("Price parse fail: %s (raw=%r)", name, raw_price)
-                continue
-
-            results.append(
-                ScrapedPrice(hotel_name=name, price=price, source=self.name)
-            )
-
-        logger.info("[%s] %d hotels scraped", self.name, len(results))
-        return results
-
-    @staticmethod
-    def _clean_price(raw: str) -> Optional[float]:
-        # "Rs.6,500" / "INR 4500.00" -> 6500.0 / 4500.0
-        # First number pattern eduthu, currency dot/comma handle pannum.
-        match = re.search(r"\d[\d,]*(?:\.\d+)?", raw)
-        if match is None:
-            return None
-        num = match.group(0).replace(",", "")
+async def run_scrape():
+    all_results = []
+    for scraper in build_scrapers():
         try:
-            return float(num)
-        except ValueError:
-            return None
+            results = await scraper.scrape()
+            all_results.extend(results)
+        except Exception as e:
+            logging.error(f"[{scraper.source_name}] failed: {e}")
+    return all_results
 
-
-# ============================================================
-# SERVICE  (orchestrator — ella scrapers run pannum)
-# ============================================================
-class ScrapeService:
-    def __init__(self):
-        self.scrapers = [
-            HotelScraper(name=t["name"], url=t["url"], headless=HEADLESS)
-            for t in get_targets()
-        ]
-
-    async def run_once(self) -> List[ScrapedPrice]:
-        all_results: List[ScrapedPrice] = []
-
-        for scraper in self.scrapers:
-            try:
-                results = await scraper.scrape()
-                all_results.extend(results)
-            except Exception as exc:
-                # Oru site fail aana matha sites continue aaganum
-                logger.error("Scraper '%s' failed: %s", scraper.name, exc)
-
-        logger.info("=== Total scraped this run: %d ===", len(all_results))
-        for r in all_results:
-            logger.info("   %-28s Rs.%-10.2f (%s)", r.hotel_name, r.price, r.source)
-        return all_results
-
-
-# ============================================================
-# SCHEDULER
-# ============================================================
-def create_scheduler(service: ScrapeService) -> AsyncIOScheduler:
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        service.run_once,
-        trigger=IntervalTrigger(minutes=SCRAPE_INTERVAL_MINUTES),
-        id="scrape_competitor_prices",
-        name="Scrape competitor hotel prices",
-        replace_existing=True,
-        max_instances=1,   # last run mudiyala na overlap pannathu
-        coalesce=True,
-    )
-    logger.info("Scheduler ready — every %d min scrape pannum", SCRAPE_INTERVAL_MINUTES)
-    return scheduler
-
-
-# ============================================================
-# ENTRY POINT
-# ============================================================
-async def run_with_scheduler() -> None:
-    service = ScrapeService()
-
-    # 1. Startup la udane oru thadava scrape (5 min wait pannama)
-    logger.info("Initial scrape running on startup...")
-    await service.run_once()
-
-    # 2. Apparam scheduler start
-    scheduler = create_scheduler(service)
-    scheduler.start()
-
-    logger.info("Running. Ctrl+C to stop.")
+def run_scrape_sync():
+    """
+    gunicorn + asyncio fix:
+    Always create a fresh event loop — asyncio.run() crashes if a loop
+    is already running (e.g. under some gunicorn worker types).
+    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        while True:
-            await asyncio.sleep(3600)
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Shutting down scheduler...")
-        scheduler.shutdown()
+        return loop.run_until_complete(run_scrape())
+    finally:
+        loop.close()
 
+# ── Pages ──
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-async def run_once_only() -> None:
-    await ScrapeService().run_once()
+# ── Scrape API ──
+@app.route("/api/scrape")
+def scrape():
+    try:
+        results = run_scrape_sync()
+        data = [
+            {"hotel_name": r.hotel_name, "price": r.price, "source": r.source}
+            for r in results
+        ]
+        data.sort(key=lambda x: x["price"])
+        _cache["data"] = data
+        _cache["last_updated"] = datetime.now(IST).strftime("%d %b %Y, %I:%M %p")
+        return jsonify({"success": True, "data": data, "last_updated": _cache["last_updated"]})
+    except Exception as e:
+        logging.error(f"/api/scrape error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/cached")
+def cached():
+    return jsonify({"data": _cache["data"], "last_updated": _cache["last_updated"]})
+
+# ── CRUD APIs ──
+
+@app.route("/api/hotels", methods=["POST"])
+def create_hotel():
+    data = request.json
+    if not data or not data.get("hotel_name") or not data.get("price"):
+        return jsonify({"success": False, "error": "hotel_name and price required"}), 400
+    hotel = Hotel(
+        hotel_name=data["hotel_name"],
+        price=float(data["price"]),
+        source=data.get("source", "manual")
+    )
+    db.session.add(hotel)
+    db.session.commit()
+    return jsonify({"success": True, "hotel": hotel.to_dict()})
+
+@app.route("/api/hotels", methods=["GET"])
+def get_hotels():
+    hotels = Hotel.query.order_by(Hotel.price).all()
+    return jsonify({"success": True, "data": [h.to_dict() for h in hotels]})
+
+@app.route("/api/hotels/<int:hotel_id>", methods=["PUT"])
+def update_hotel(hotel_id):
+    hotel = Hotel.query.get_or_404(hotel_id)
+    data = request.json
+    if "hotel_name" in data:
+        hotel.hotel_name = data["hotel_name"]
+    if "price" in data:
+        hotel.price = float(data["price"])
+    if "source" in data:
+        hotel.source = data["source"]
+    hotel.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"success": True, "hotel": hotel.to_dict()})
+
+@app.route("/api/hotels/<int:hotel_id>", methods=["DELETE"])
+def delete_hotel(hotel_id):
+    hotel = Hotel.query.get_or_404(hotel_id)
+    db.session.delete(hotel)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Deleted"})
+
+@app.route("/api/save-scraped", methods=["POST"])
+def save_scraped():
+    if not _cache["data"]:
+        return jsonify({"success": False, "error": "No scraped data. Run scrape first."}), 400
+    Hotel.query.filter(Hotel.source.in_(["booking.com", "oyo"])).delete()
+    for item in _cache["data"]:
+        db.session.add(Hotel(
+            hotel_name=item["hotel_name"],
+            price=item["price"],
+            source=item["source"]
+        ))
+    db.session.commit()
+    return jsonify({"success": True, "saved": len(_cache["data"])})
 
 if __name__ == "__main__":
-    # python app.py once  -> oru scrape mattum
-    # python app.py       -> scheduler + initial scrape
-    if len(sys.argv) > 1 and sys.argv[1] == "once":
-        asyncio.run(run_once_only())
-    else:
-        asyncio.run(run_with_scheduler())
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
