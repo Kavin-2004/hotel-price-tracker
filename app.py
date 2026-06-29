@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from scrapers.booking import BookingScraper
 from scrapers.oyo import OyoScraper
-from scrapers.goibibo import GobiboScraper
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hotels.db'
