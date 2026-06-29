@@ -3,39 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hotel Price Tracker - Coimbatore</title>
+  <title>Hotel Price Tracker — Coimbatore</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #0b0f1a; --surface: #131929; --surface2: #1b2440; --border: #232e4a;
       --accent: #4f8ef7; --accent2: #38d9a9; --text: #e8edf5; --muted: #7889aa;
-      --booking: #4f8ef7; --oyo: #ff5a5f; --danger: #ff5a5f; --success: #38d9a9;
+      --booking: #4f8ef7; --oyo: #ff5a5f;
     }
     body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
-
-    /* HEADER */
-    header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .brand h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .brand h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; }
     .brand h1 span { color: var(--accent); }
-    .brand p { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .brand p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .last-updated { font-size: 0.75rem; color: var(--muted); }
-    .master-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-    .master-btn:hover, .master-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .master-btn.otas { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
-    .master-btn.otas:hover, .master-btn.otas.active { background: var(--accent2); border-color: var(--accent2); color: #000; }
-    /* OTA TABLE */
-    .ota-status-active { color: var(--accent2); font-weight: 600; font-size: 0.82rem; }
-    .ota-status-inactive { color: var(--danger); font-weight: 600; font-size: 0.82rem; }
-
-    main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
     .page { display: none; }
     .page.active { display: block; }
 
     /* HOME */
     .home-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
     .home-sub { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+    /* SEARCH BAR — Feature 1 */
     .search-wrap { max-width: 500px; margin: 0 auto 2rem; position: relative; }
     .global-search { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 0.85rem 1.2rem; color: var(--text); font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
     .global-search:focus { border-color: var(--accent); }
@@ -47,9 +38,10 @@
     .search-result-item:hover { background: var(--surface2); }
     .search-result-item .hotel-n { font-weight: 500; }
     .search-result-item .hotel-p { color: var(--accent2); font-size: 0.82rem; margin-top: 2px; }
+
     .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 600px; margin: 0 auto 2rem; }
     .platform-card { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
-    .platform-card:hover { transform: translateY(-3px); background: var(--surface2); }
+    .platform-card:hover { border-color: var(--accent); transform: translateY(-3px); background: var(--surface2); }
     .platform-card.booking:hover { border-color: var(--booking); }
     .platform-card.oyo:hover { border-color: var(--oyo); }
     .platform-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
@@ -57,98 +49,51 @@
     .platform-name.booking { color: var(--booking); }
     .platform-name.oyo { color: var(--oyo); }
     .platform-desc { font-size: 0.8rem; color: var(--muted); }
-    .fetch-all-btn { display: block; margin: 0 auto; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 0.75rem 2rem; font-size: 0.95rem; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
+    .fetch-all-btn { display: block; margin: 0 auto; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 0.75rem 2rem; font-size: 0.95rem; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: background 0.2s; }
+    .fetch-all-btn:hover { background: #3a7ae4; }
 
-    /* MASTER PAGE */
-    .master-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
-    .master-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-    .master-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
-    .scrape-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.88rem; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
-    .scrape-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
-
-    /* STATS */
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1rem; }
-    .stat-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-card .value { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; margin-top: 3px; }
-    .stat-card .value.green { color: var(--accent2); }
-    .stat-card .value.blue { color: var(--accent); }
-    .stat-card .value.red { color: var(--oyo); }
-
-    /* TABLE */
-    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .table-toolbar { padding: 0.75rem 1rem; display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-    .filter-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 0.35rem 0.8rem; font-size: 0.78rem; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .tbl-search { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.8rem; color: var(--text); font-size: 0.78rem; font-family: 'Inter', sans-serif; outline: none; margin-left: auto; width: 180px; }
-    .tbl-search:focus { border-color: var(--accent); }
-    table { width: 100%; border-collapse: collapse; }
-    thead th { padding: 0.7rem 1rem; text-align: left; font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--surface2); }
-    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: var(--surface2); }
-    tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; }
-    .hotel-name-cell { font-weight: 500; max-width: 280px; }
-    .price-cell { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--accent2); }
-    .source-badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; }
-    .source-booking { background: rgba(79,142,247,0.15); color: var(--booking); }
-    .source-oyo { background: rgba(255,90,95,0.15); color: var(--oyo); }
-    .action-btns { display: flex; gap: 0.4rem; }
-    .btn-edit { font-size: 0.75rem; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 3px 8px; border-radius: 5px; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-del { font-size: 0.75rem; background: rgba(255,90,95,0.1); border: none; color: var(--danger); padding: 3px 8px; border-radius: 5px; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .btn-del:hover { background: rgba(255,90,95,0.2); }
-
-    /* RIGHT PANEL */
-    .right-col { display: flex; flex-direction: column; gap: 1rem; }
-    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
-    .panel-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
-    .form-group { margin-bottom: 0.75rem; }
-    .form-group label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 4px; }
-    .form-group input, .form-group select { width: 100%; font-size: 0.85rem; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-family: 'Inter', sans-serif; outline: none; }
-    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-    .submit-btn { width: 100%; padding: 0.65rem; background: var(--accent2); color: #0b1a14; border: none; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .submit-btn:hover { opacity: 0.9; }
-    .cancel-btn { width: 100%; padding: 0.5rem; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; cursor: pointer; font-family: 'Inter', sans-serif; margin-top: 0.4rem; }
-
-    /* MODAL */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
-    .modal-overlay.show { display: flex; }
-    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; width: 90%; max-width: 400px; }
-    .modal-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
-    .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    .modal-actions .confirm-del { flex: 1; background: var(--danger); color: #fff; border: none; border-radius: 6px; padding: 0.6rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-    .modal-actions .cancel-del { flex: 1; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem; font-size: 0.88rem; cursor: pointer; }
-
-    /* TOAST */
-    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.2rem; font-size: 0.85rem; z-index: 300; display: none; }
-    .toast.show { display: block; }
-    .toast.success { border-color: var(--success); color: var(--success); }
-    .toast.error { border-color: var(--danger); color: var(--danger); }
-
-    /* STATES */
-    .state-box { text-align: center; padding: 3rem 2rem; }
-    .state-box .title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .state-box .desc { color: var(--muted); font-size: 0.82rem; }
-    .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* LIST PAGE */
+    /* HOTEL LIST PAGE */
     .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .back-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .back-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s; }
     .back-btn:hover { background: var(--surface2); }
     .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; }
     .page-title span.booking { color: var(--booking); }
     .page-title span.oyo { color: var(--oyo); }
     .page-title span.all { color: var(--accent2); }
-    .search-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1rem; color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; width: 220px; margin-left: auto; }
+    .search-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1rem; color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; width: 220px; transition: border-color 0.2s; margin-left: auto; }
     .search-box:focus { border-color: var(--accent); }
+    .search-box::placeholder { color: var(--muted); }
 
-    /* COMPARE PAGE */
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; }
+    .stat-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card .value { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+    .stat-card .value.green { color: var(--accent2); }
+    .stat-card .value.blue { color: var(--accent); }
+    .stat-card .value.red { color: var(--oyo); }
+
+    /* TABLE */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 0.85rem 1.2rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--surface2); cursor: pointer; }
+    thead th:hover { color: var(--text); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; cursor: pointer; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 0.9rem 1.2rem; font-size: 0.88rem; }
+    .rank { color: var(--muted); font-size: 0.78rem; }
+    .hotel-name { font-weight: 500; }
+    .price { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; color: var(--accent2); }
+    .source-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; }
+    .source-booking { background: rgba(79,142,247,0.15); color: var(--booking); }
+    .source-oyo { background: rgba(255,90,95,0.15); color: var(--oyo); }
+
+    /* COMPARE PAGE — Feature 1 */
     .compare-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; }
     .compare-hotel-name { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 1.2rem; }
     .compare-table { width: 100%; border-collapse: collapse; }
-    .compare-table th { text-align: left; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .compare-table th { text-align: left; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
     .compare-table td { padding: 1rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
     .compare-table tr:last-child td { border-bottom: none; }
     .compare-price { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
@@ -158,21 +103,30 @@
     .visit-platform-btn { font-size: 0.8rem; color: var(--accent); background: rgba(79,142,247,0.1); border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
     .visit-platform-btn.oyo { color: var(--oyo); background: rgba(255,90,95,0.1); }
 
-    /* DETAIL PAGE */
+    /* HOTEL DETAIL PAGE */
     .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
     .detail-hotel-name { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
     .detail-price { font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--accent2); margin-bottom: 0.5rem; }
     .detail-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
     .detail-info-item { background: var(--surface2); border-radius: 10px; padding: 1rem; }
-    .detail-info-item .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+    .detail-info-item .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
     .detail-info-item .val { font-size: 0.95rem; font-weight: 500; }
-    .visit-btn { display: inline-block; margin-top: 1.5rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 0.7rem 1.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; }
+    .visit-btn { display: inline-block; margin-top: 1.5rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 0.7rem 1.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; transition: background 0.2s; }
+    .visit-btn:hover { background: #3a7ae4; }
     .visit-btn.oyo { background: var(--oyo); }
 
-    @media (max-width: 768px) {
-      .master-layout { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: repeat(2, 1fr); }
+    /* STATES */
+    .state-box { text-align: center; padding: 4rem 2rem; }
+    .state-box .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .state-box .title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .state-box .desc { color: var(--muted); font-size: 0.85rem; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
       .platform-grid { grid-template-columns: 1fr; }
+      .search-box { width: 100%; margin-left: 0; }
     }
   </style>
 </head>
@@ -180,13 +134,10 @@
 
 <header>
   <div class="brand">
-    <h1>Hotel Tracker <span>Coimbatore</span></h1>
+    <h1>[H] Hotel Tracker <span>Coimbatore</span></h1>
     <p>Live prices from Booking.com & OYO</p>
   </div>
-  <div class="header-right">
-    <div class="last-updated" id="lastUpdated">--</div>
-    <button class="master-btn" onclick="toggleMaster()" id="masterBtn">Master</button>
-  </div>
+  <div class="last-updated" id="lastUpdated">—</div>
 </header>
 
 <main>
@@ -195,31 +146,36 @@
   <div class="page active" id="page-home">
     <div class="home-title">Compare Hotel Prices</div>
     <div class="home-sub">Search a hotel or select a platform to browse live prices</div>
+
+    <!-- FEATURE 1: Global Hotel Search -->
     <div class="search-wrap">
-      <input type="text" class="global-search" id="globalSearch" placeholder="Search any hotel name..." oninput="onGlobalSearch()" autocomplete="off" />
+      <input type="text" class="global-search" id="globalSearch" placeholder="[S] Search any hotel name..." oninput="onGlobalSearch()" autocomplete="off" />
       <div class="search-results-dropdown" id="searchDropdown"></div>
     </div>
+
+    <!-- FEATURE 2: Platform Selection -->
     <div class="platform-grid">
       <div class="platform-card booking" onclick="loadPlatform('booking.com')">
-        <div class="platform-icon">B</div>
+        <div class="platform-icon">[B]</div>
         <div class="platform-name booking">Booking.com</div>
         <div class="platform-desc">International platform, best prices</div>
       </div>
       <div class="platform-card oyo" onclick="loadPlatform('oyo')">
-        <div class="platform-icon">O</div>
+        <div class="platform-icon">[O]</div>
         <div class="platform-name oyo">OYO</div>
         <div class="platform-desc">Budget friendly Indian hotels</div>
       </div>
     </div>
-    <button class="fetch-all-btn" onclick="fetchAll()">Fetch All Platforms</button>
+
+    <button class="fetch-all-btn" onclick="fetchAll()">[S] Fetch All Platforms</button>
   </div>
 
   <!-- PAGE 2: HOTEL LIST -->
   <div class="page" id="page-list">
     <div class="page-header">
-      <button class="back-btn" onclick="goHome()">Back</button>
+      <button class="back-btn" onclick="goHome()">&larr; Back</button>
       <div class="page-title" id="list-title">Hotels</div>
-      <input type="text" class="search-box" placeholder="Search hotel..." oninput="filterHotels()" id="searchBox" />
+      <input type="text" class="search-box" placeholder="[S] Search hotel..." oninput="filterHotels()" id="searchBox" />
     </div>
     <div class="stats" id="listStats"></div>
     <div class="table-wrap" id="hotelTable"></div>
@@ -228,308 +184,96 @@
   <!-- PAGE 3: HOTEL DETAIL -->
   <div class="page" id="page-detail">
     <div class="page-header">
-      <button class="back-btn" onclick="goBack()">Back to List</button>
+      <button class="back-btn" onclick="goBack()">&larr; Back to List</button>
       <div class="page-title">Hotel Details</div>
     </div>
     <div id="detailContent"></div>
   </div>
 
-  <!-- PAGE 4: COMPARE -->
+  <!-- PAGE 4: COMPARE (Feature 1) -->
   <div class="page" id="page-compare">
     <div class="page-header">
-      <button class="back-btn" onclick="goHome()">Back</button>
+      <button class="back-btn" onclick="goHome()">&larr; Back</button>
       <div class="page-title">Price Comparison</div>
     </div>
     <div id="compareContent"></div>
   </div>
 
-  <!-- PAGE 6: OTAs MASTER -->
-  <div class="page" id="page-ota-master">
-    <div class="master-header">
-      <div class="master-title">OTAs Master</div>
-      <button class="scrape-btn" onclick="showAddOtaForm()">+ Add New OTA</button>
-    </div>
-    <div class="master-layout">
-      <div>
-        <div class="table-wrap" id="otaTable"></div>
-      </div>
-      <div class="right-col">
-        <div class="panel" id="otaFormPanel">
-          <div class="panel-title" id="otaFormTitle">Add New OTA</div>
-          <div style="display:flex;flex-direction:column;gap:0.75rem">
-            <input type="hidden" id="otaEditId" value="">
-            <div>
-              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">OTA Name</label>
-              <input type="text" id="otaName" placeholder="e.g. MakeMyTrip" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.88rem;font-family:Inter,sans-serif;outline:none">
-            </div>
-            <div>
-              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Status</label>
-              <select id="otaStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.88rem;font-family:Inter,sans-serif;outline:none">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            <button onclick="saveOta()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0.65rem;font-size:0.88rem;font-weight:600;font-family:Inter,sans-serif;cursor:pointer">Save OTA</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAGE 5: MASTER DASHBOARD -->
-  <div class="page" id="page-master">
-    <div class="master-header">
-      <div class="master-title">Master Dashboard</div>
-      <button class="scrape-btn" id="scrapeAndSaveBtn" onclick="scrapeAndSave()">Scrape & Save to DB</button>
-    </div>
-
-    <div class="stats" id="masterStats">
-      <div class="stat-card"><div class="label">Total Hotels</div><div class="value blue" id="mTotal">--</div></div>
-      <div class="stat-card"><div class="label">Cheapest</div><div class="value green" id="mCheap">--</div></div>
-      <div class="stat-card"><div class="label">Average</div><div class="value" id="mAvg">--</div></div>
-      <div class="stat-card"><div class="label">Booking.com</div><div class="value blue" id="mBooking">--</div></div>
-    </div>
-
-    <div class="master-layout">
-      <!-- LEFT: Table -->
-      <div>
-        <div class="table-wrap">
-          <div class="table-toolbar">
-            <button class="filter-btn active" onclick="setMasterFilter('all', this)">All</button>
-            <button class="filter-btn" onclick="setMasterFilter('booking.com', this)">Booking.com</button>
-            <button class="filter-btn" onclick="setMasterFilter('oyo', this)">OYO</button>
-            <button class="filter-btn" onclick="setMasterFilter('manual', this)">Manual</button>
-            <input type="text" class="tbl-search" placeholder="Search..." oninput="renderMasterTable()" id="masterSearch" />
-          </div>
-          <div id="masterTableBody"></div>
-        </div>
-      </div>
-
-      <!-- RIGHT: Add / Edit Form -->
-      <div class="right-col">
-        <div class="panel">
-          <div class="panel-title" id="formTitle">Add Hotel Manually</div>
-          <input type="hidden" id="editId" value="" />
-          <div class="form-group">
-            <label>Hotel Name</label>
-            <input type="text" id="fName" placeholder="Enter hotel name" />
-          </div>
-          <div class="form-group">
-            <label>Price per Night (Rs)</label>
-            <input type="number" id="fPrice" placeholder="e.g. 2500" />
-          </div>
-          <div class="form-group">
-            <label>Source</label>
-            <select id="fSource">
-              <option value="manual">Manual</option>
-              <option value="booking.com">Booking.com</option>
-              <option value="oyo">OYO</option>
-            </select>
-          </div>
-          <button class="submit-btn" onclick="submitForm()">Add Hotel</button>
-          <button class="cancel-btn" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Cancel Edit</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </main>
-
-<!-- DELETE MODAL -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <div class="modal-title">Delete Hotel?</div>
-    <div id="deleteModalName" style="color:var(--muted); font-size:0.88rem; margin-bottom:0.5rem"></div>
-    <div style="font-size:0.82rem; color:var(--muted)">This action cannot be undone.</div>
-    <div class="modal-actions">
-      <button class="cancel-del" onclick="closeDeleteModal()">Cancel</button>
-      <button class="confirm-del" onclick="confirmDelete()">Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
 
 <script>
   let allData = [];
-  let masterData = [];
   let currentPlatform = 'all';
   let filteredData = [];
-  let masterFilter = 'all';
   let sortCol = 'price';
   let sortDir = 1;
-  let deleteTargetId = null;
-  let isMasterOpen = false;
 
   // ---- NAVIGATION ----
   function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
-  function goHome() { showPage('page-home'); isMasterOpen = false; document.getElementById('masterBtn').classList.remove('active'); }
+  function goHome() { showPage('page-home'); }
   function goBack() { showPage('page-list'); }
 
-  function toggleMaster() {
-    isMasterOpen = !isMasterOpen;
-    document.getElementById('masterBtn').classList.toggle('active', isMasterOpen);
-    if (isMasterOpen) { showPage('page-master'); loadMasterData(); }
-    else goHome();
-  }
-
-  // ---- TOAST ----
-  function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `toast show ${type}`;
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // ---- GLOBAL SEARCH ----
+  // ---- GLOBAL SEARCH (Feature 1) ----
   function onGlobalSearch() {
     const q = document.getElementById('globalSearch').value.trim().toLowerCase();
     const dropdown = document.getElementById('searchDropdown');
+
     if (q.length < 2) { dropdown.classList.remove('show'); return; }
+
     if (allData.length === 0) {
-      dropdown.innerHTML = `<div class="search-result-item"><div class="hotel-n">Fetch data first - click a platform below</div></div>`;
-      dropdown.classList.add('show'); return;
+      dropdown.innerHTML = `<div class="search-result-item"><div class="hotel-n">Fetch data first — click a platform below</div></div>`;
+      dropdown.classList.add('show');
+      return;
     }
+
     const matches = allData.filter(d => d.hotel_name.toLowerCase().includes(q));
+    // Group by hotel name (unique names)
     const seen = new Set();
-    const unique = matches.filter(d => { const k = d.hotel_name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    const unique = matches.filter(d => {
+      const key = d.hotel_name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 8);
+
     if (!unique.length) {
       dropdown.innerHTML = `<div class="search-result-item"><div class="hotel-n" style="color:var(--muted)">No hotels found</div></div>`;
-      dropdown.classList.add('show'); return;
+      dropdown.classList.add('show');
+      return;
     }
+
     dropdown.innerHTML = unique.map(d => {
       const platforms = allData.filter(x => x.hotel_name.toLowerCase() === d.hotel_name.toLowerCase());
       const minPrice = Math.min(...platforms.map(x => x.price));
-      const platformNames = [...new Set(platforms.map(x => x.source === 'booking.com' ? 'Booking.com' : 'OYO'))].join(', ');
+      const platformNames = platforms.map(x => x.source === 'booking.com' ? 'Booking.com' : 'OYO').join(', ');
       return `<div class="search-result-item" onclick="showCompare('${d.hotel_name.replace(/'/g, "\\'")}')">
         <div class="hotel-n">${d.hotel_name}</div>
-        <div class="hotel-p">From Rs ${minPrice.toLocaleString()} - ${platformNames}</div>
+        <div class="hotel-p">From ₹${minPrice.toLocaleString()} · ${platformNames}</div>
       </div>`;
     }).join('');
     dropdown.classList.add('show');
   }
 
-  // ---- OTA MASTER ----
-  let otaData = [];
-
-  function showOtaMaster() {
-    document.getElementById('masterBtn').classList.remove('active');
-    document.getElementById('otaBtn').classList.add('active');
-    showPage('page-ota-master');
-    loadOtas();
-  }
-
-  async function loadOtas() {
-    try {
-      const res = await fetch('/api/otas');
-      const json = await res.json();
-      if (json.success) {
-        otaData = json.data;
-        renderOtaTable();
-      }
-    } catch(e) {
-      // If API not available, show default OTAs
-      otaData = [
-        {id:1, name:'Booking.com', status:'active'},
-        {id:2, name:'OYO', status:'active'}
-      ];
-      renderOtaTable();
+  // Close dropdown on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) {
+      document.getElementById('searchDropdown').classList.remove('show');
     }
-  }
+  });
 
-  function renderOtaTable() {
-    const wrap = document.getElementById('otaTable');
-    if (!otaData.length) {
-      wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No OTAs found. Add one!</div>';
-      return;
-    }
-    wrap.innerHTML = `<table>
-      <thead><tr>
-        <th>#</th>
-        <th>OTA Name</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr></thead>
-      <tbody>${otaData.map((o,i) => `<tr>
-        <td>${i+1}</td>
-        <td style="font-weight:500">${o.name}</td>
-        <td><span class="ota-status-${o.status}">${o.status === 'active' ? '✅ Active' : '❌ Inactive'}</span></td>
-        <td><div class="action-btns">
-          <button class="btn-edit" onclick="editOta(${o.id})">Edit</button>
-          <button class="btn-del" onclick="deleteOta(${o.id})">Delete</button>
-        </div></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }
-
-  function showAddOtaForm() {
-    document.getElementById('otaEditId').value = '';
-    document.getElementById('otaName').value = '';
-    document.getElementById('otaStatus').value = 'active';
-    document.getElementById('otaFormTitle').textContent = 'Add New OTA';
-  }
-
-  function editOta(id) {
-    const ota = otaData.find(o => o.id === id);
-    if (!ota) return;
-    document.getElementById('otaEditId').value = ota.id;
-    document.getElementById('otaName').value = ota.name;
-    document.getElementById('otaStatus').value = ota.status;
-    document.getElementById('otaFormTitle').textContent = 'Edit OTA';
-  }
-
-  async function saveOta() {
-    const id = document.getElementById('otaEditId').value;
-    const name = document.getElementById('otaName').value.trim();
-    const status = document.getElementById('otaStatus').value;
-    if (!name) { alert('OTA name required!'); return; }
-    try {
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? '/api/otas/' + id : '/api/otas';
-      const res = await fetch(url, {
-        method, headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({name, status})
-      });
-      const json = await res.json();
-      if (json.success) { loadOtas(); showAddOtaForm(); }
-    } catch(e) {
-      // Local update if API not available
-      if (id) {
-        const idx = otaData.findIndex(o => o.id === parseInt(id));
-        if (idx > -1) otaData[idx] = {...otaData[idx], name, status};
-      } else {
-        otaData.push({id: Date.now(), name, status});
-      }
-      renderOtaTable();
-      showAddOtaForm();
-    }
-  }
-
-  async function deleteOta(id) {
-    if (!confirm('Delete this OTA?')) return;
-    try {
-      const res = await fetch('/api/otas/' + id, {method:'DELETE'});
-      const json = await res.json();
-      if (json.success) loadOtas();
-    } catch(e) {
-      otaData = otaData.filter(o => o.id !== id);
-      renderOtaTable();
-    }
-  }
-
-    document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) document.getElementById('searchDropdown').classList.remove('show'); });
-
-  // ---- COMPARE ----
+  // ---- COMPARE PAGE (Feature 1) ----
   function showCompare(hotelName) {
     document.getElementById('searchDropdown').classList.remove('show');
     document.getElementById('globalSearch').value = '';
+
     const platforms = allData.filter(d => d.hotel_name.toLowerCase() === hotelName.toLowerCase());
     const minPrice = Math.min(...platforms.map(d => d.price));
+
     showPage('page-compare');
+
     const rows = [
       { source: 'booking.com', label: 'Booking.com', url: `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotelName + ' Coimbatore')}&selected_currency=INR` },
       { source: 'oyo', label: 'OYO', url: `https://www.oyorooms.com/search?location=coimbatore&q=${encodeURIComponent(hotelName)}` },
@@ -539,31 +283,32 @@
       if (match) {
         return `<tr>
           <td><span class="source-badge ${p.source === 'booking.com' ? 'source-booking' : 'source-oyo'}">${p.label}</span></td>
-          <td><span class="compare-price ${isBest ? 'best' : ''}">Rs ${match.price.toLocaleString()}</span>${isBest ? '<span class="best-badge">Best Price</span>' : ''}</td>
-          <td><a href="${p.url}" target="_blank" class="visit-platform-btn ${p.source === 'oyo' ? 'oyo' : ''}">View on ${p.label}</a></td>
+          <td><span class="compare-price ${isBest ? 'best' : ''}">₹${match.price.toLocaleString()}</span>${isBest ? '<span class="best-badge">* Best Price</span>' : ''}</td>
+          <td><a href="${p.url}" target="_blank" class="visit-platform-btn ${p.source === 'oyo' ? 'oyo' : ''}">View on ${p.label} →</a></td>
         </tr>`;
       } else {
         return `<tr>
           <td><span class="source-badge ${p.source === 'booking.com' ? 'source-booking' : 'source-oyo'}">${p.label}</span></td>
           <td class="no-data">Not available</td>
-          <td><a href="${p.url}" target="_blank" class="visit-platform-btn ${p.source === 'oyo' ? 'oyo' : ''}">Search on ${p.label}</a></td>
+          <td><a href="${p.url}" target="_blank" class="visit-platform-btn ${p.source === 'oyo' ? 'oyo' : ''}">Search on ${p.label} →</a></td>
         </tr>`;
       }
     }).join('');
+
     document.getElementById('compareContent').innerHTML = `
       <div class="compare-card">
-        <div class="compare-hotel-name">${hotelName}</div>
+        <div class="compare-hotel-name">[H] ${hotelName}</div>
         <table class="compare-table">
           <thead><tr><th>Platform</th><th>Price / Night</th><th>Action</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <div style="text-align:center; margin-top:1rem">
-        <button class="fetch-all-btn" onclick="goHome()" style="display:inline-block; width:auto">Search Another Hotel</button>
+      <div class="compare-card" style="text-align:center; padding: 1rem">
+        <button class="fetch-all-btn" onclick="goHome()" style="margin:0">&larr; Search Another Hotel</button>
       </div>`;
   }
 
-  // ---- FETCH & SCRAPE ----
+  // ---- FETCH DATA ----
   async function loadPlatform(platform) {
     currentPlatform = platform;
     showPage('page-list');
@@ -571,7 +316,7 @@
     const label = platform === 'booking.com' ? 'Booking.com' : 'OYO';
     document.getElementById('list-title').innerHTML = `<span class="${color}">${label}</span> Hotels`;
     if (allData.length > 0) { renderList(); return; }
-    showListLoading();
+    showLoading();
     await scrape();
     renderList();
   }
@@ -580,7 +325,7 @@
     currentPlatform = 'all';
     showPage('page-list');
     document.getElementById('list-title').innerHTML = `<span class="all">All Platforms</span>`;
-    showListLoading();
+    showLoading();
     await scrape();
     renderList();
   }
@@ -589,29 +334,23 @@
     try {
       const res = await fetch('/api/scrape');
       const json = await res.json();
-      if (json.success) { allData = json.data; document.getElementById('lastUpdated').textContent = 'Updated: ' + json.last_updated; }
-    } catch (e) { console.error(e); }
+      if (json.success) {
+        allData = json.data;
+        document.getElementById('lastUpdated').textContent = 'Updated: ' + json.last_updated;
+      }
+    } catch (e) { showError(e.message); }
   }
 
-  async function scrapeAndSave() {
-    const btn = document.getElementById('scrapeAndSaveBtn');
-    btn.disabled = true; btn.textContent = 'Scraping...';
-    await scrape();
-    try {
-      const res = await fetch('/api/save-scraped', { method: 'POST' });
-      const json = await res.json();
-      if (json.success) { showToast(`Saved ${json.saved} hotels to database!`); loadMasterData(); }
-      else showToast(json.error || 'Save failed', 'error');
-    } catch (e) { showToast('Error: ' + e.message, 'error'); }
-    btn.disabled = false; btn.textContent = 'Scrape & Save to DB';
-  }
-
-  function showListLoading() {
+  function showLoading() {
     document.getElementById('listStats').innerHTML = '';
-    document.getElementById('hotelTable').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="title">Fetching live prices...</div><div class="desc">Please wait 30-60 seconds</div></div>`;
+    document.getElementById('hotelTable').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="title">Fetching live prices...</div><div class="desc">Visiting ${currentPlatform === 'all' ? 'Booking.com & OYO' : currentPlatform} — please wait 30–60 seconds</div></div>`;
   }
 
-  // ---- LIST PAGE ----
+  function showError(msg) {
+    document.getElementById('hotelTable').innerHTML = `<div class="state-box"><div class="icon">!</div><div class="title">Failed</div><div class="desc">${msg}</div></div>`;
+  }
+
+  // ---- RENDER LIST ----
   function renderList() {
     const query = (document.getElementById('searchBox').value || '').toLowerCase();
     filteredData = allData.filter(d => {
@@ -619,26 +358,35 @@
       const matchS = d.hotel_name.toLowerCase().includes(query);
       return matchP && matchS;
     });
-    filteredData.sort((a, b) => { const av = sortCol === 'price' ? a.price : a[sortCol]; const bv = sortCol === 'price' ? b.price : b[sortCol]; return av > bv ? sortDir : av < bv ? -sortDir : 0; });
+    filteredData.sort((a, b) => {
+      const av = sortCol === 'price' ? a.price : a[sortCol];
+      const bv = sortCol === 'price' ? b.price : b[sortCol];
+      return av > bv ? sortDir : av < bv ? -sortDir : 0;
+    });
     const prices = filteredData.map(d => d.price);
     const booking = filteredData.filter(d => d.source === 'booking.com');
     const oyo = filteredData.filter(d => d.source === 'oyo');
     document.getElementById('listStats').innerHTML = `
-      <div class="stat-card"><div class="label">Total</div><div class="value blue">${filteredData.length}</div></div>
-      <div class="stat-card"><div class="label">Cheapest</div><div class="value green">${prices.length ? 'Rs' + Math.min(...prices).toLocaleString() : '--'}</div></div>
-      <div class="stat-card"><div class="label">Average</div><div class="value">${prices.length ? 'Rs' + Math.round(prices.reduce((a,b)=>a+b,0)/prices.length).toLocaleString() : '--'}</div></div>
-      ${currentPlatform === 'all' ? `<div class="stat-card"><div class="label">Booking.com</div><div class="value blue">${booking.length}</div></div>` : ''}`;
-    if (!filteredData.length) { document.getElementById('hotelTable').innerHTML = `<div class="state-box"><div class="title">No hotels found</div></div>`; return; }
+      <div class="stat-card"><div class="label">Total Hotels</div><div class="value blue">${filteredData.length}</div></div>
+      <div class="stat-card"><div class="label">Cheapest</div><div class="value green">${prices.length ? '₹' + Math.min(...prices).toLocaleString() : '—'}</div></div>
+      <div class="stat-card"><div class="label">Average</div><div class="value">${prices.length ? '₹' + Math.round(prices.reduce((a,b)=>a+b,0)/prices.length).toLocaleString() : '—'}</div></div>
+      ${currentPlatform === 'all' ? `<div class="stat-card"><div class="label">Booking.com</div><div class="value blue">${booking.length}</div></div><div class="stat-card"><div class="label">OYO</div><div class="value red">${oyo.length}</div></div>` : ''}`;
+    if (!filteredData.length) {
+      document.getElementById('hotelTable').innerHTML = `<div class="state-box"><div class="icon">[S]</div><div class="title">No hotels found</div><div class="desc">Try a different search</div></div>`;
+      return;
+    }
     const rows = filteredData.map((d, i) => {
       const src = d.source === 'booking.com' ? 'source-booking' : 'source-oyo';
       const lbl = d.source === 'booking.com' ? 'Booking.com' : 'OYO';
-      return `<tr onclick="showDetail(${i})"><td>${i+1}</td><td class="hotel-name-cell">${d.hotel_name}</td><td class="price-cell">Rs ${d.price.toLocaleString()}</td><td><span class="source-badge ${src}">${lbl}</span></td></tr>`;
+      return `<tr onclick="showDetail(${i})"><td class="rank">#${i+1}</td><td class="hotel-name">${d.hotel_name}</td><td class="price">₹${d.price.toLocaleString()}</td><td><span class="source-badge ${src}">${lbl}</span></td></tr>`;
     }).join('');
-    document.getElementById('hotelTable').innerHTML = `<table><thead><tr><th>#</th><th>Hotel Name</th><th>Price/Night</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById('hotelTable').innerHTML = `<table><thead><tr><th onclick="sortBy('rank')">#</th><th onclick="sortBy('hotel_name')">Hotel Name </th><th onclick="sortBy('price')">Price / Night </th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
-  function filterHotels() { renderList(); }
 
-  // ---- DETAIL PAGE ----
+  function filterHotels() { renderList(); }
+  function sortBy(col) { if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; } renderList(); }
+
+  // ---- HOTEL DETAIL ----
   function showDetail(index) {
     const hotel = filteredData[index];
     showPage('page-detail');
@@ -648,147 +396,27 @@
     const searchUrl = isBooking
       ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel.hotel_name + ' Coimbatore')}&selected_currency=INR`
       : `https://www.oyorooms.com/search?location=coimbatore&q=${encodeURIComponent(hotel.hotel_name)}`;
+
+    // Check if same hotel exists in other platform
     const otherPlatform = allData.filter(d => d.hotel_name.toLowerCase() === hotel.hotel_name.toLowerCase() && d.source !== hotel.source);
-    const compareBtn = otherPlatform.length > 0 ? `<button onclick="showCompare('${hotel.hotel_name.replace(/'/g, "\\'")}')\" style="margin-left:1rem" class="visit-btn">Compare Platforms</button>` : '';
+    const compareBtn = otherPlatform.length > 0
+      ? `<button onclick="showCompare('${hotel.hotel_name.replace(/'/g, "\\'")}') " style="margin-left:1rem" class="visit-btn" style="background:var(--accent2)">[C] Compare Platforms</button>`
+      : '';
+
     document.getElementById('detailContent').innerHTML = `
       <div class="detail-card">
         <div class="detail-hotel-name">${hotel.hotel_name}</div>
-        <div class="detail-price">Rs ${hotel.price.toLocaleString()}<span style="font-size:1rem; color:var(--muted); font-weight:400"> / night</span></div>
+        <div class="detail-price">₹${hotel.price.toLocaleString()}<span style="font-size:1rem; color:var(--muted); font-weight:400"> / night</span></div>
         <div style="margin-bottom:0.5rem"><span class="source-badge ${srcClass}">${srcLabel}</span></div>
         <div class="detail-info">
           <div class="detail-info-item"><div class="label">City</div><div class="val">Coimbatore</div></div>
           <div class="detail-info-item"><div class="label">Platform</div><div class="val">${srcLabel}</div></div>
-          <div class="detail-info-item"><div class="label">Price/Night</div><div class="val">Rs ${hotel.price.toLocaleString()}</div></div>
+          <div class="detail-info-item"><div class="label">Price / Night</div><div class="val">₹${hotel.price.toLocaleString()}</div></div>
           <div class="detail-info-item"><div class="label">Last Updated</div><div class="val">${document.getElementById('lastUpdated').textContent.replace('Updated: ', '')}</div></div>
         </div>
-        <a href="${searchUrl}" target="_blank" class="visit-btn ${isBooking ? '' : 'oyo'}">View on ${srcLabel}</a>
+        <a href="${searchUrl}" target="_blank" class="visit-btn ${isBooking ? '' : 'oyo'}">View on ${srcLabel} →</a>
         ${compareBtn}
       </div>`;
-  }
-
-  // ---- MASTER DASHBOARD ----
-  async function loadMasterData() {
-    document.getElementById('masterTableBody').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="title">Loading...</div></div>`;
-    try {
-      const res = await fetch('/api/hotels');
-      const json = await res.json();
-      if (json.success) { masterData = json.data; renderMasterTable(); updateMasterStats(); }
-    } catch (e) { document.getElementById('masterTableBody').innerHTML = `<div class="state-box"><div class="title">Error loading data</div></div>`; }
-  }
-
-  function updateMasterStats() {
-    const prices = masterData.map(d => d.price);
-    const booking = masterData.filter(d => d.source === 'booking.com');
-    document.getElementById('mTotal').textContent = masterData.length;
-    document.getElementById('mCheap').textContent = prices.length ? 'Rs' + Math.min(...prices).toLocaleString() : '--';
-    document.getElementById('mAvg').textContent = prices.length ? 'Rs' + Math.round(prices.reduce((a,b)=>a+b,0)/prices.length).toLocaleString() : '--';
-    document.getElementById('mBooking').textContent = booking.length;
-  }
-
-  function setMasterFilter(f, el) {
-    masterFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    renderMasterTable();
-  }
-
-  function renderMasterTable() {
-    const query = (document.getElementById('masterSearch').value || '').toLowerCase();
-    let filtered = masterData.filter(d => {
-      const matchF = masterFilter === 'all' || d.source === masterFilter;
-      const matchS = d.hotel_name.toLowerCase().includes(query);
-      return matchF && matchS;
-    });
-    if (!filtered.length) {
-      document.getElementById('masterTableBody').innerHTML = `<div class="state-box"><div class="title">No hotels found</div><div class="desc">Add hotels manually or scrape data</div></div>`;
-      return;
-    }
-    const rows = filtered.map((d, i) => {
-      const src = d.source === 'booking.com' ? 'source-booking' : d.source === 'oyo' ? 'source-oyo' : '';
-      const lbl = d.source === 'booking.com' ? 'Booking.com' : d.source === 'oyo' ? 'OYO' : 'Manual';
-      return `<tr>
-        <td>${i+1}</td>
-        <td class="hotel-name-cell">${d.hotel_name}</td>
-        <td class="price-cell">Rs ${d.price.toLocaleString()}</td>
-        <td><span class="source-badge ${src}">${lbl}</span></td>
-        <td class="action-btns">
-          <button class="btn-edit" onclick="startEdit(${d.id}, '${d.hotel_name.replace(/'/g, "\\'")}', ${d.price}, '${d.source}')">Edit</button>
-          <button class="btn-del" onclick="openDeleteModal(${d.id}, '${d.hotel_name.replace(/'/g, "\\'")}')">Delete</button>
-        </td>
-      </tr>`;
-    }).join('');
-    document.getElementById('masterTableBody').innerHTML = `<table><thead><tr><th>#</th><th>Hotel Name</th><th>Price/Night</th><th>Source</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
-  }
-
-  // ---- CRUD ----
-  async function submitForm() {
-    const id = document.getElementById('editId').value;
-    const name = document.getElementById('fName').value.trim();
-    const price = document.getElementById('fPrice').value;
-    const source = document.getElementById('fSource').value;
-    if (!name || !price) { showToast('Please fill all fields', 'error'); return; }
-
-    if (id) {
-      // UPDATE
-      const res = await fetch(`/api/hotels/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({hotel_name: name, price, source}) });
-      const json = await res.json();
-      if (json.success) { showToast('Hotel updated!'); cancelEdit(); loadMasterData(); }
-      else showToast(json.error || 'Update failed', 'error');
-    } else {
-      // CREATE
-      const res = await fetch('/api/hotels', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({hotel_name: name, price, source}) });
-      const json = await res.json();
-      if (json.success) { showToast('Hotel added!'); clearForm(); loadMasterData(); }
-      else showToast(json.error || 'Add failed', 'error');
-    }
-  }
-
-  function startEdit(id, name, price, source) {
-    document.getElementById('editId').value = id;
-    document.getElementById('fName').value = name;
-    document.getElementById('fPrice').value = price;
-    document.getElementById('fSource').value = source;
-    document.getElementById('formTitle').textContent = 'Edit Hotel';
-    document.getElementById('cancelEditBtn').style.display = 'block';
-    const btn = document.querySelector('.submit-btn');
-    btn.textContent = 'Update Hotel';
-    btn.style.background = 'var(--accent)';
-  }
-
-  function cancelEdit() {
-    clearForm();
-    document.getElementById('formTitle').textContent = 'Add Hotel Manually';
-    document.getElementById('cancelEditBtn').style.display = 'none';
-    const btn = document.querySelector('.submit-btn');
-    btn.textContent = 'Add Hotel';
-    btn.style.background = 'var(--accent2)';
-  }
-
-  function clearForm() {
-    document.getElementById('editId').value = '';
-    document.getElementById('fName').value = '';
-    document.getElementById('fPrice').value = '';
-    document.getElementById('fSource').value = 'manual';
-  }
-
-  function openDeleteModal(id, name) {
-    deleteTargetId = id;
-    document.getElementById('deleteModalName').textContent = name;
-    document.getElementById('deleteModal').classList.add('show');
-  }
-
-  function closeDeleteModal() {
-    deleteTargetId = null;
-    document.getElementById('deleteModal').classList.remove('show');
-  }
-
-  async function confirmDelete() {
-    if (!deleteTargetId) return;
-    const res = await fetch(`/api/hotels/${deleteTargetId}`, { method: 'DELETE' });
-    const json = await res.json();
-    closeDeleteModal();
-    if (json.success) { showToast('Hotel deleted!'); loadMasterData(); }
-    else showToast('Delete failed', 'error');
   }
 </script>
 </body>
