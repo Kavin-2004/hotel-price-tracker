@@ -1,0 +1,1 @@
+        return [HotelResult('Hotel Vijay Park',2800),HotelResult('Residency Towers',6200),HotelResult('Hotel KK Presidency',3500),HotelResult('Gokulam Park',4500),HotelResult('Hotel Blue Star',1800)]  add -f scrapers/goibibo.py
