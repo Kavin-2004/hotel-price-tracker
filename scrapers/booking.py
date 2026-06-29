@@ -15,7 +15,7 @@ class BookingScraper:
     def __init__(
         self,
         city: str = "Coimbatore",
-        headless: bool = False,
+        headless: bool = True,
         max_scrolls: int = 12,
     ):
         self.city = city
