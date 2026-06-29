@@ -366,17 +366,19 @@
     dropdown.innerHTML = unique.map(d => {
       const platforms = allData.filter(x => x.hotel_name.toLowerCase() === d.hotel_name.toLowerCase());
       const minPrice = Math.min(...platforms.map(x => x.price));
-      const otaRows = [
+      const otaPlatforms = [
         { source: 'booking.com', label: 'Booking.com' },
         { source: 'oyo', label: 'OYO' },
-      ].map(p => {
+      ].map(p => ({ ...p, price: (platforms.find(x => x.source === p.source) || {}).price || 99999 }))
+       .sort((a, b) => a.price - b.price);
+      const otaRows = otaPlatforms.map(p => {
         const match = platforms.find(x => x.source === p.source);
         const isBest = match && match.price === minPrice;
         if (match) {
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
             <span style="font-size:0.78rem;color:var(--muted)">${p.label}</span>
-            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:${isBest ? 'var(--accent2)' : 'var(--text)'}">
-              ₹${match.price.toLocaleString()}${isBest ? ' <span style="background:rgba(56,217,169,0.15);color:#38d9a9;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:600">BEST</span>' : ''}
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--text)">
+              ₹${match.price.toLocaleString()}
             </span>
           </div>`;
         } else {
