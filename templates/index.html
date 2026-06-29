@@ -23,6 +23,11 @@
     .last-updated { font-size: 0.75rem; color: var(--muted); }
     .master-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .master-btn:hover, .master-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .master-btn.otas { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    .master-btn.otas:hover, .master-btn.otas.active { background: var(--accent2); border-color: var(--accent2); color: #000; }
+    /* OTA TABLE */
+    .ota-status-active { color: var(--accent2); font-weight: 600; font-size: 0.82rem; }
+    .ota-status-inactive { color: var(--danger); font-weight: 600; font-size: 0.82rem; }
 
     main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
     .page { display: none; }
@@ -238,6 +243,39 @@
     <div id="compareContent"></div>
   </div>
 
+  <!-- PAGE 6: OTAs MASTER -->
+  <div class="page" id="page-ota-master">
+    <div class="master-header">
+      <div class="master-title">OTAs Master</div>
+      <button class="scrape-btn" onclick="showAddOtaForm()">+ Add New OTA</button>
+    </div>
+    <div class="master-layout">
+      <div>
+        <div class="table-wrap" id="otaTable"></div>
+      </div>
+      <div class="right-col">
+        <div class="panel" id="otaFormPanel">
+          <div class="panel-title" id="otaFormTitle">Add New OTA</div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <input type="hidden" id="otaEditId" value="">
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">OTA Name</label>
+              <input type="text" id="otaName" placeholder="e.g. MakeMyTrip" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.88rem;font-family:Inter,sans-serif;outline:none">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Status</label>
+              <select id="otaStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.88rem;font-family:Inter,sans-serif;outline:none">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <button onclick="saveOta()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0.65rem;font-size:0.88rem;font-weight:600;font-family:Inter,sans-serif;cursor:pointer">Save OTA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PAGE 5: MASTER DASHBOARD -->
   <div class="page" id="page-master">
     <div class="master-header">
@@ -353,7 +391,7 @@
     const dropdown = document.getElementById('searchDropdown');
     if (q.length < 2) { dropdown.classList.remove('show'); return; }
     if (allData.length === 0) {
-      dropdown.innerHTML = `<div class="search-result-item"><div class="hotel-n">Fetch data first — click "Fetch All Platforms" below</div></div>`;
+      dropdown.innerHTML = `<div class="search-result-item"><div class="hotel-n">Fetch data first - click a platform below</div></div>`;
       dropdown.classList.add('show'); return;
     }
     const matches = allData.filter(d => d.hotel_name.toLowerCase().includes(q));
@@ -366,36 +404,124 @@
     dropdown.innerHTML = unique.map(d => {
       const platforms = allData.filter(x => x.hotel_name.toLowerCase() === d.hotel_name.toLowerCase());
       const minPrice = Math.min(...platforms.map(x => x.price));
-      const otaPlatforms = [
-        { source: 'booking.com', label: 'Booking.com' },
-        { source: 'oyo', label: 'OYO' },
-      ].map(p => ({ ...p, price: (platforms.find(x => x.source === p.source) || {}).price || 99999 }))
-       .sort((a, b) => a.price - b.price);
-      const otaRows = otaPlatforms.map(p => {
-        const match = platforms.find(x => x.source === p.source);
-        const isBest = match && match.price === minPrice;
-        if (match) {
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:0.78rem;color:var(--muted)">${p.label}</span>
-            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--text)">
-              ₹${match.price.toLocaleString()}
-            </span>
-          </div>`;
-        } else {
-          return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:0.78rem;color:var(--muted)">${p.label}</span>
-            <span style="font-size:0.78rem;color:var(--muted)">N/A</span>
-          </div>`;
-        }
-      }).join('');
-      return `<div class="search-result-item">
-        <div class="hotel-n" style="margin-bottom:6px;font-weight:600">${d.hotel_name}</div>
-        ${otaRows}
+      const platformNames = [...new Set(platforms.map(x => x.source === 'booking.com' ? 'Booking.com' : 'OYO'))].join(', ');
+      return `<div class="search-result-item" onclick="showCompare('${d.hotel_name.replace(/'/g, "\\'")}')">
+        <div class="hotel-n">${d.hotel_name}</div>
+        <div class="hotel-p">From Rs ${minPrice.toLocaleString()} - ${platformNames}</div>
       </div>`;
     }).join('');
     dropdown.classList.add('show');
   }
-  document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) document.getElementById('searchDropdown').classList.remove('show'); });
+
+  // ---- OTA MASTER ----
+  let otaData = [];
+
+  function showOtaMaster() {
+    document.getElementById('masterBtn').classList.remove('active');
+    document.getElementById('otaBtn').classList.add('active');
+    showPage('page-ota-master');
+    loadOtas();
+  }
+
+  async function loadOtas() {
+    try {
+      const res = await fetch('/api/otas');
+      const json = await res.json();
+      if (json.success) {
+        otaData = json.data;
+        renderOtaTable();
+      }
+    } catch(e) {
+      // If API not available, show default OTAs
+      otaData = [
+        {id:1, name:'Booking.com', status:'active'},
+        {id:2, name:'OYO', status:'active'}
+      ];
+      renderOtaTable();
+    }
+  }
+
+  function renderOtaTable() {
+    const wrap = document.getElementById('otaTable');
+    if (!otaData.length) {
+      wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No OTAs found. Add one!</div>';
+      return;
+    }
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>#</th>
+        <th>OTA Name</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>${otaData.map((o,i) => `<tr>
+        <td>${i+1}</td>
+        <td style="font-weight:500">${o.name}</td>
+        <td><span class="ota-status-${o.status}">${o.status === 'active' ? '✅ Active' : '❌ Inactive'}</span></td>
+        <td><div class="action-btns">
+          <button class="btn-edit" onclick="editOta(${o.id})">Edit</button>
+          <button class="btn-del" onclick="deleteOta(${o.id})">Delete</button>
+        </div></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function showAddOtaForm() {
+    document.getElementById('otaEditId').value = '';
+    document.getElementById('otaName').value = '';
+    document.getElementById('otaStatus').value = 'active';
+    document.getElementById('otaFormTitle').textContent = 'Add New OTA';
+  }
+
+  function editOta(id) {
+    const ota = otaData.find(o => o.id === id);
+    if (!ota) return;
+    document.getElementById('otaEditId').value = ota.id;
+    document.getElementById('otaName').value = ota.name;
+    document.getElementById('otaStatus').value = ota.status;
+    document.getElementById('otaFormTitle').textContent = 'Edit OTA';
+  }
+
+  async function saveOta() {
+    const id = document.getElementById('otaEditId').value;
+    const name = document.getElementById('otaName').value.trim();
+    const status = document.getElementById('otaStatus').value;
+    if (!name) { alert('OTA name required!'); return; }
+    try {
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? '/api/otas/' + id : '/api/otas';
+      const res = await fetch(url, {
+        method, headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({name, status})
+      });
+      const json = await res.json();
+      if (json.success) { loadOtas(); showAddOtaForm(); }
+    } catch(e) {
+      // Local update if API not available
+      if (id) {
+        const idx = otaData.findIndex(o => o.id === parseInt(id));
+        if (idx > -1) otaData[idx] = {...otaData[idx], name, status};
+      } else {
+        otaData.push({id: Date.now(), name, status});
+      }
+      renderOtaTable();
+      showAddOtaForm();
+    }
+  }
+
+  async function deleteOta(id) {
+    if (!confirm('Delete this OTA?')) return;
+    try {
+      const res = await fetch('/api/otas/' + id, {method:'DELETE'});
+      const json = await res.json();
+      if (json.success) loadOtas();
+    } catch(e) {
+      otaData = otaData.filter(o => o.id !== id);
+      renderOtaTable();
+    }
+  }
+
+    document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) document.getElementById('searchDropdown').classList.remove('show'); });
 
   // ---- COMPARE ----
   function showCompare(hotelName) {
