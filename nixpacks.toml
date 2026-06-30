@@ -1,9 +1,5 @@
-[phases.setup]
-nixPkgs = ["chromium", "nss", "nspr", "atk", "cups", "dbus", "expat", "libdrm", "libxkbcommon", "mesa", "libGL", "alsa-lib", "at-spi2-atk", "at-spi2-core", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr", "xorg.libxcb", "gtk3", "pango", "cairo", "gdk-pixbuf", "glib"]
-
 [phases.install]
-cmds = ["pip install -r requirements.txt", "playwright install chromium"]
+cmds = ["pip install -r requirements.txt", "playwright install chromium --with-deps"]
 
 [start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1"
-playwright install chromium --with-deps 
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --threads 2"
